@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 class Products
 {
     /**
-     * 
+     *
      * @method getProducts
      * @param int $p_user_id
      * @param array $filter_products
@@ -28,7 +28,7 @@ class Products
         {
             $query->whereIn('p.product_id', $filter_products);
         }
-          
+
         $result = $query->get();
         $total = DB::select(DB::raw("SELECT FOUND_ROWS() AS total;"))[0];
         $return = [
@@ -39,7 +39,7 @@ class Products
     }
 
     /**
-     * 
+     *
      * @method getProductID
      * @param string $p_product_type
      * @return array
@@ -51,7 +51,7 @@ class Products
         $query = DB::table('products as p')
           ->select(array( DB::raw($expression_raw)))
           ->where('p.product_type', $p_product_type);
-          
+
         $result = $query->get();
         $return = $result->all();
         return $return;
@@ -80,7 +80,7 @@ class Products
      */
     public function setProductUser ($p_product_id, $p_user_id)
     {
-        
+
         $result = DB::table('products_users')->insert(
         [
             'product_id' => $p_product_id,

@@ -8,7 +8,7 @@ class Users
 {
 
     /**
-     * Public method that returns all users. 
+     * Public method that returns all users.
      * In case you have the product filter, it will return all the users that contain those products.
      * @method getUsers
      * @param  void $p_filter_products
@@ -35,7 +35,7 @@ class Users
                 users as u
               $sql_join
               JOIN cities as c
-                ON 
+                ON
                     ST_CONTAINS(
                       c.geom,
                       GeomFromText(CONCAT('POINT(', u.user_lng, ' ', u.user_lat, ')'), 1)
