@@ -1,29 +1,32 @@
 <footer>
-    <div class="container">
-        <div class="row">
+    <div class="container-fluid">
+        <div class="row border-top p-2 small">
+
             <div class="col-xs-12 col-md-4 text-left">
-                <h6 class="text-muted lead">LINKS</h6>
+                <a href="{{ url('https://github.com/josego85/products-covid19py') }}" target="_blank"><i class="fa fa-github fa-2x" aria-hidden="true"></i> Licencia GPLv3</a>
+            </div>
+
+            <div class="col-xs-12 col-md-4 text-left text-md-center">
                 <div>
                     <a class="a-vendedor" href="{{ url('disclaimer') }}">T&eacute;rminos de uso</a>
                 </div>
             </div>
 
-            <div class="col-xs-12 col-md-4 text-left">
-                <div>
-                    <a href="{{ url('https://github.com/josego85/products-covid19py') }}" class="fa fa-github" style="font-size:48px;" target="_blank"></a>
-                </div>
-            </div>
-
             <div class="col-xs-12 col-md-4 text-right">
-                <h6 class="text-muted lead">ENCU&Eacute;NTRANOS EN LAS REDES</h6>
                 <div>
-                    <a href="{{ url('https://www.facebook.com/Productospy-100335464986824') }}" class="fa fa-facebook" target="_blank"></a>
-                    <a href="{{ url('https://twitter.com/ProductosPy') }}" class="fa fa-twitter" target="_blank"></a>
-                    <a href="{{ url('https://www.instagram.com/productospy') }}" class="fa fa-instagram" target="_blank"></a>
+                    <a href="{{ url('https://www.facebook.com/Productospy-100335464986824') }}" class="btn btn-link" target="_blank">
+                        <i class="fa fa-facebook"></i>
+                    </a>
+                    <a href="{{ url('https://twitter.com/ProductosPy') }}" class="btn btn-link" target="_blank">
+                        <i class="fa fa-twitter"></i>
+                    </a>
+                    <a href="{{ url('https://www.instagram.com/productospy') }}" class="btn btn-link" target="_blank">
+                        <i class="fa fa-instagram"></i>
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="row"> 
+        <div class="row">
             <div class="col-md-12 text-right">
                 <p class="text-muted small">Copyright &copy; Proyectos Beta 2020</p>
             </div>
@@ -38,5 +41,3 @@
         gtag('config', GOOGLE_ANALYTICS_CODE);
     </script>
 </footer>
-</body>
-</html>

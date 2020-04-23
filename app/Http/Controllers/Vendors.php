@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Model\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Users as usersModel;
@@ -11,8 +12,7 @@ use App\Libraries\Utils;
 use Validator;
 
 class Vendors extends Controller
-{   
-    
+{
     /**
      * Retorna un listado de vendedores
      */
@@ -35,7 +35,7 @@ class Vendors extends Controller
                 $filter_products[] = $product_id;
             }
         }
-        $result_vendors = $user->getUsers($filter_products, $city_filter);
+        $result_vendors = $user->getUsers($filter_products, $city_filter, 5);
         $vendors = $result_vendors['data'];
 
         foreach($vendors as $vendor)
@@ -44,7 +44,7 @@ class Vendors extends Controller
             $result_products = $products->getProducts($vendor_id, $filter_products);
             $total = $result_products['total'];
             $vendor->products = null;
-            
+
             if ($total != 0)
             {
                 $data = $result_products['data'];
@@ -59,15 +59,16 @@ class Vendors extends Controller
 
 
     /**
-     * 
+     *
      * Inserta un nuevo vendedor
-     * 
+     *
      * @param Request $request
      */
     public function postVendor(Request $request)
     {
+        $code = 409;
         $validador = Validator::make($request->all(),
-        [            
+        [
             'user_email' => 'email|nullable',
             'user_phone' => 'required|numeric',
             'user_comment' => 'max:4000',
@@ -100,8 +101,8 @@ class Vendors extends Controller
         $user_lat = $this->securityCleanCode($request->input("user_lat"));
 
         DB::beginTransaction();
-        
-        try 
+
+        try
         {
             $user = new usersModel();
             $data_user =
@@ -120,7 +121,7 @@ class Vendors extends Controller
             $product_model = new productsModel();
 
             // todo check products.
-            
+
             $products = $this->securityCleanCode($request->input('products'));
             foreach ($products as $product)
             {
@@ -133,6 +134,7 @@ class Vendors extends Controller
             }
             DB::commit();
             $msg = 'Vendedor guardado.';
+            $code = 200;
         }
         catch (\Exception $e)
         {
@@ -146,7 +148,6 @@ class Vendors extends Controller
         }
 
         $UtilsFunctions = new Utils;
-        $code = 200;
 
         return $UtilsFunctions->json_response($code, $msg);
     }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Model\Product;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,17 +20,17 @@ Route::get('/disclaimer', function () {
     return view('pages.disclaimer');
 });
 
-Route::get('/vendor', function () {
-    return view('vendor');
+Route::get('/vendor', function(){
+    return view('vendor', ['products' => Product::all()]);
 });
 
 
 /**
- * Utilidades Paralelas, mejorar para la aplicacion que se iran insertando 
+ * Utilidades Paralelas, mejorar para la aplicacion que se iran insertando
  * de manera gradual
  * @since 1.*
- * 
- */ 
+ *
+ */
 Route::prefix('p')->namespace('Web')->group(function(){
 
 	Route::get('/', function () {

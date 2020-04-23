@@ -13,7 +13,7 @@ namespace App\Libraries
                 $features[] = array(
                     'type' => 'Feature',
                     'geometry' => array(
-                        'type' => 'Point', 
+                        'type' => 'Point',
                         'coordinates' => array(
                             ($value->user_lng)? (float)$value->user_lng : null,
                             ($value->user_lat)? (float)$value->user_lat : null,
@@ -23,13 +23,13 @@ namespace App\Libraries
                         'nombre' => $value->user_full_name,
                         'contacto' => $value->user_phone,
                         'comentarios' => ($value->user_comment)? $value->user_comment : '',
-                        'productos' => $value->products
+                        'productos' => $value->products,
                     )
                 );
             };
 
             $allfeatures = array(
-                'type' => 'FeatureCollection', 
+                'type' => 'FeatureCollection',
                 'features' => $features
             );
             return json_encode($allfeatures, JSON_PRETTY_PRINT);

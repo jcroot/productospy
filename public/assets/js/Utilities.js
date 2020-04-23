@@ -11,7 +11,7 @@ var gps_active = false;
 function localization (p_action)
 {
 	action = p_action;
-	
+
     if (navigator.geolocation)
     {
         navigator.geolocation.getCurrentPosition(getCoordinates, errors,
@@ -38,7 +38,7 @@ function getCoordinates (p_position)
     let coordinates = new Array();
     coordinates['lng']  = p_position.coords.longitude;
 	coordinates['lat'] = p_position.coords.latitude;
-	
+
     let zoom = DEFAULT_ZOOM_MAP;
     gps_active = true;
 
@@ -69,23 +69,23 @@ function errors (error)
     		break;
     }
     defaultPosition();
-}	
+}
 
 /**
  * Method that positions default.
  * @method defaultPosition
  * @returns void
- */ 
+ */
 function defaultPosition ()
 {
     let lng = DEFAULT_LNG;
 	let lat = DEFAULT_LAT;
 	let coordinates = new Array();
 	let zoom = DEFAULT_ZOOM_MAP;
-   
+
     coordinates['lng']  = lng;
     coordinates['lat'] = lat;
-    
+
 	load_map(coordinates, zoom);
 }
 
@@ -112,7 +112,7 @@ function load_map (p_coordinates, p_zoom)
 }
 
 //
-function products_filter ()
+function products_filter (showScrollTop = true)
 {
     let products_filter = $("[name='products[]']").serializeArray();
     let city_filter = $("[name='city']").val();
@@ -127,7 +127,8 @@ function products_filter ()
     chShipBlock.hide();
 
     // Go to the top product-filter section.
-    $(window).scrollTop($('#product-filter').offset().top);
+    if (showScrollTop)
+        $(window).scrollTop($('#product-filter').offset().top);
 }
 
 function marker_point_map (p_e, p_zoom)
@@ -147,7 +148,7 @@ function marker_point_map (p_e, p_zoom)
 //         $.each(p_data, function(key, val) {
 //             bb = val.boundingbox;
 //             console.log('val: ', val);
-            
+
 //             v_array_items.push("<li><a href='#' onclick='elegirDireccion(" + bb[0] + ", " + bb[2] + ", " + bb[1] + ", " + bb[3] + ", \"" + val.osm_type + "\");return false;'>" + val.display_name + '</a></li>');
 //         });
 

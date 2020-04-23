@@ -13,8 +13,8 @@ function Map (p_coordinates, p_zoom, p_action)
     let lng = p_coordinates['lng'];
 
     // Add 1.65 to center Paraguay;
-    let lat = (action === 'list')? p_coordinates['lat'] + 1.65 : p_coordinates['lat'];  
-    
+    let lat = (action === 'list')? p_coordinates['lat'] + 1.65 : p_coordinates['lat'];
+
     let minZoom = DEFAULT_MIN_ZOOM_MAP;
     let maxZoom = DEFAULT_MAX_ZOOM_MAP;
 
@@ -31,7 +31,7 @@ function Map (p_coordinates, p_zoom, p_action)
             position: 'topleft'
         }
     });
-    
+
     // Do not repeat the map.
     //map.setMaxBounds([[-90, -180], [90, 180]]);
 
@@ -56,7 +56,7 @@ function Map (p_coordinates, p_zoom, p_action)
 Map.prototype.get_vendors = function()
 {
 	let map = this.map;
-	
+
 	this.geojsonLayer = new L.GeoJSON();
 
 	let v_geo_json_url = HOSTNAME_API + "vendors";
@@ -74,7 +74,7 @@ Map.prototype.get_vendors = function()
     {
         iconUrl: urlIcon + 'vendor_32.png'
     });
-    
+
     let layer_vendors;
 
     $.getJSON(v_geo_json_url, function(p_data)
@@ -88,7 +88,7 @@ Map.prototype.get_vendors = function()
 
                 return L.marker(latlng,
                 {
-                    title: feature.properties.nombre, 
+                    title: feature.properties.nombre,
                     icon: icon
                 });
 			}
@@ -142,7 +142,7 @@ Map.prototype.products_filter = function (p_products_filter, p_city_filter)
                 let bounds = cluster_markers.getBounds();
                 map.fitBounds(bounds);
                 if (count == 1)
-                {   
+                {
                     map.setZoom(DEFAULT_ZOOM_MARKER);
                 }
             }
@@ -158,6 +158,8 @@ Map.prototype.products_filter = function (p_products_filter, p_city_filter)
             let coordinates = get_coordinates_center_map(map);
             map.setView(coordinates, DEFAULT_ZOOM_MAP);
         }
+
+        generate_table_all_vendor (p_data);
     });
 }
 
@@ -167,10 +169,10 @@ Map.prototype.marker_point = function (p_zoom)
     let coordinates = get_coordinates_center_map(map);
 
     clean_marker();
-	
+
     marker_point = new L.marker(coordinates,
     {
-		id: 'vendor', 
+		id: 'vendor',
         draggable: 'true',
         title: 'Mi ubicación'
     });
@@ -263,7 +265,7 @@ function onEachFeature (p_feature, p_layer)
                         product_name = value[index]['product_name'];
                         product_type = value[index]['product_type'];
                         product += '<li>' + capitalize(product_name) + '</li>';
-                       
+
                     }
                     product += '</ul>';
                     v_popupString += '<b>' + capitalize(propertie) + '</b>: ' + product;
@@ -273,7 +275,7 @@ function onEachFeature (p_feature, p_layer)
                     v_popupString += '<b>' + capitalize(propertie) + '</b>: ' + value + '<br />';
                 }
             }
-        }        
+        }
         v_popupString += '</div>';
         p_layer.bindPopup(v_popupString);
     }
@@ -305,7 +307,7 @@ function addSearcher (map)
         marker_point.setLatLng(center);
         map.setView(center, 18);
     })
-    .addTo(map); 
+    .addTo(map);
 }
 
 function clean_marker ()
@@ -320,7 +322,7 @@ function generate_table_all_vendor (p_data)
 {
     let features = p_data.features;
     let index, propertie;
-    let table = [];
+    let buffer = [];
     let count = 0;
     let index_tmp;
     let products;
@@ -332,51 +334,27 @@ function generate_table_all_vendor (p_data)
 
         products = propertie.productos;
         product = '';
-        
+
         for (index_tmp in products)
         {
             product += products[index_tmp].product_name + ', ';
         }
         product = product.substr(0, product.length - 2);
 
-        table.push(
-        {
-            numero: ++count,
-            vendedor: propertie.nombre,
-            contacto: convert_link_wa(propertie.contacto),
-            productos: product,
-            comentarios: propertie.comentarios
-        });
+        buffer.push('<div class="list-group-item">');
+            buffer.push('<div class="row">');
+                buffer.push('<div class="col-6 small"><strong class="text-left font-weight-bold">' + propertie.nombre + '</strong></div>');
+                buffer.push('<div class="col-6 text-right">' + convert_link_wa(propertie.contacto) + '</div>');
+            buffer.push('</div><div class="small">' + product + '</div>');
+        buffer.push('</div>');
     }
+    if (buffer.length>0)
+        $('#last-request').empty().append(buffer.join(''));
+    else
+        $('#last-request').empty().append('<div class="list-group-item">No tenemos vendedores en la zona</div>');
 
-    $('#table_vendors_without_geo').DataTable(
-    {
-        data: table,
-        columns:
-        [
-            { data: "numero" },
-            { data: "comentarios" },
-            { data: "productos" },
-            { data: "contacto" },
-            { data: "vendedor" }
-        ],
-        language:
-        {
-            search: "Buscar:",
-            lengthMenu: "Mostrar _MENU_ vendedores",
-            info: "Mostrando la p&aacute;gina _PAGE_ de _PAGES_ de _TOTAL_ vendedores",
-            infoEmpty: "No hay registros disponibles",
-            infoFiltered: "(filtrado de _MAX_ vendedores)",
-            zeroRecords: "Nada encontrado - lo siento",
-            paginate:
-            {
-                first: "Primero",
-                previous: "Anterior",
-                next: "Siguiente",
-                last: "&Uaute;ltimo"
-            }
-        }
-    });
+    if (buffer.length > 5)
+        $('#next').css('display', '');
 }
 
 function check_cellphone_number (p_phone_number)
@@ -397,7 +375,7 @@ function convert_link_wa (p_phone_number)
     if (check_cellphone_number(p_phone_number))
     {
         let wa_number = p_phone_number.substr(1);
-        wa_number = '<a href="https://wa.me/595' + wa_number + '" target="_blank">' + p_phone_number + '<a>';
+        wa_number = '<a href="https://wa.me/595' + wa_number + '" target="_blank" class="btn btn-link btn-sm text-success">' + p_phone_number + ' <i class="fa fa-whatsapp" aria-hidden="true"></i><a>';
         return wa_number;
     }
     return p_phone_number;

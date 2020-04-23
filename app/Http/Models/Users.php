@@ -15,7 +15,7 @@ class Users
      * @param  void $p_filter_city
      * @return array
      */
-    public function getUsers ($p_filter_products = null, $p_filter_city = null)
+    public function getUsers ($p_filter_products = null, $p_filter_city = null, $limit = 10)
     {
         $expression_raw = 'SQL_CALC_FOUND_ROWS u.user_id, u.user_full_name, u.user_phone, u.user_comment, u.user_lng, ' .
           'u.user_lat';
@@ -54,6 +54,7 @@ class Users
             ->select(array( DB::raw($expression_raw)));
             $query->where('u.user_state', 'active');
             $query->orderBy('u.user_registration', 'desc');
+            $query->limit($limit);
 
             if (isset($p_filter_products))
             {
