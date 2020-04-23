@@ -3,42 +3,55 @@ Sitio para ver productos que se venden para el uso contra el virus COVID19.
 
 
 Levantar en sitio en cualquier server (Apache, etc.)
-[Sitio] (https://productospy.org/)
+
+[Ir a productospy.org](https://productospy.org/)
 
 
-Tecnologías utilizadas:
+## Tecnologías utilizadas (Toolkit)
+
 - JavaScript (Leaflet, JQuery, Boostrap)
 - CSS
 - HTML
-- PHP 7.4 (Laravel 6)
+- [PHP 7.4 (Laravel 6)](https://laravel.com/docs)
+- [Composer](https://getcomposer.org/download/)
 - Datos OSM (Nominatim como buscador)
 
 
-Todo list:
-- Mejoras en la lista de vendedores sin ubicación.
 
+## Contribuir
 
-Pasos:
+- Crear fork.
+- Crear un feature branch: git checkout -b nueva-feature
+- Comitear tus cambios: git commit -am 'Añadir alguna feature'
+- Push el branch: git push origin nueva-feature
+- Enviar un pull request.
 
+## Pasos
+
+```sh
+	git clone https://github.com/josego85/products-covid19py.git
+	sudo chown -R www-data:www-data ./products-covid19py
+	cd products-covid19py
+	composer install 
+	composer update
+	cp .env.example .env
+	php artisan key:generate
+	php artisan serve 
 ```
-sudo git https://github.com/josego85/api-products-covid19py.git /var/www/html/products-covid19py
-sudo chown -R proyectosbeta:www-data products-covid19py
-cd products-covid19py
-composer install
-composer update
-sudo chown www-data:www-data storage -R
-```
 
 
-Base de datos:
+## Base de datos
 
+```sh
+	mysql -u root -p
+	CREATE DATABASE productospy CHARACTER SET utf8 COLLATE utf8_general_ci;
+	exit
+	mysql -u tu_usuario -p productospy < ~/productospy.sql 
+	GRANT ALL PRIVILEGES ON productospy.* TO tu_usuario@'localhost' IDENTIFIED BY 'xxxxxxxxxxxxx';
+	FLUSH PRIVILEGES;
+	exit
 ```
-mysql -u root -p
-CREATE DATABASE products_covid19 CHARACTER SET utf8 COLLATE utf8_general_ci;
-exit
-mysql -u root -p products_covid19 < ~/products_covid19.sql
-mysql -u root -p
-GRANT ALL PRIVILEGES ON products_covid19.* TO covid19@'localhost' IDENTIFIED BY 'xxxxxxxxxxxxx';
-FLUSH PRIVILEGES;
-exit
-```
+
+## Todo list
+* Mejoras en la lista de vendedores sin ubicación.
+* Mejora en la GUI.

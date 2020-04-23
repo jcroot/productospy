@@ -4,14 +4,17 @@ var cluster_markers = null;
 // Class Map.
 
 // Constructor Map.
-function Map (p_coordinates, p_zoom)
+function Map (p_coordinates, p_zoom, p_action)
 {
 	// Attributes.
     this.coordinates = p_coordinates;
     this.zoom = p_zoom;
 
     let lng = p_coordinates['lng'];
-    let lat = p_coordinates['lat'];
+
+    // Add 1.65 to center Paraguay;
+    let lat = (action === 'list')? p_coordinates['lat'] + 1.65 : p_coordinates['lat'];  
+    
     let minZoom = DEFAULT_MIN_ZOOM_MAP;
     let maxZoom = DEFAULT_MAX_ZOOM_MAP;
 
@@ -86,19 +89,22 @@ Map.prototype.get_vendors = function()
                 return L.marker(latlng,
                 {
                     title: feature.properties.nombre, 
-                    //icon: icon
+                    icon: icon
                 });
 			}
         });
-        cluster_markers = L.markerClusterGroup();
+        cluster_markers = L.markerClusterGroup(
+        {
+            showCoverageOnHover: false
+        });
         cluster_markers.addLayer(layer_vendors);
         map.addLayer(cluster_markers);
 
-        generate_table (p_data);
+        generate_table_all_vendor (p_data);
     });
 };
 
-Map.prototype.products_filter = function (p_products_filter)
+Map.prototype.products_filter = function (p_products_filter, p_city_filter)
 {
     let map = this.map;
     let product;
@@ -114,7 +120,7 @@ Map.prototype.products_filter = function (p_products_filter)
     cluster_markers.clearLayers();
 
     let products = JSON.stringify(product_array);
-    let url = HOSTNAME_API + "vendors?products=" + products;
+    let url = HOSTNAME_API + "vendors?products=" + products + "&city=" + p_city_filter;
 
     $.getJSON(url, function(p_data)
     {
@@ -125,25 +131,52 @@ Map.prototype.products_filter = function (p_products_filter)
         cluster_markers.addLayer(geojsonLayer);
         map.addLayer(cluster_markers);
 
-        generate_table (p_data);
+        // Go to the specific city.
+        if (!!p_city_filter)
+        {
+            let values = p_data.features;
+            let count = values.length;
+
+            if (count != 0)
+            {
+                let bounds = cluster_markers.getBounds();
+                map.fitBounds(bounds);
+                if (count == 1)
+                {   
+                    map.setZoom(DEFAULT_ZOOM_MARKER);
+                }
+            }
+            else
+            {
+                let coordinates = get_coordinates_center_map(map);
+                map.setView(coordinates, DEFAULT_ZOOM_MAP);
+            }
+        }
+        else
+        {
+            // Options all cities.
+            let coordinates = get_coordinates_center_map(map);
+            map.setView(coordinates, DEFAULT_ZOOM_MAP);
+        }
     });
 }
 
 Map.prototype.marker_point = function (p_zoom)
 {
     let map = this.map;
-    let lng = DEFAULT_LNG;
-    let lat = DEFAULT_LAT;
+    let coordinates = get_coordinates_center_map(map);
 
     clean_marker();
 	
-    marker_point = new L.marker([lat,lng],
+    marker_point = new L.marker(coordinates,
     {
 		id: 'vendor', 
-	    draggable: 'true'
-	});
+        draggable: 'true',
+        title: 'Mi ubicación'
+    });
+    marker_point.bindPopup('Mi ubicación').openPopup();
     map.addLayer(marker_point);
-    map.setView([lat, lng], p_zoom);
+    map.setView(coordinates, p_zoom);
 
     marker_point.on("dragend", function(e) {
         let marker = e.target;
@@ -186,7 +219,7 @@ function onEachFeature (p_feature, p_layer)
 {
     if (p_feature.properties)
     {
-        let v_popupString = '<div class="popup">';
+        let v_popupString = '<div>';
         let propertie;
 
         for (propertie in p_feature.properties)
@@ -201,14 +234,14 @@ function onEachFeature (p_feature, p_layer)
                     if (value != null && (value[0] === 'w' & value[1] === 'w' & value[2] === 'w') ||
                     (value[0] === 'h' & value[1] === 't' & value[2] === 't' & value[3] === 'p'))
                     {
-                        v_popupString += `<b> ${capitalize(propertie)} </b>: <a href="${value}" target="_blank">${value}</a><br />`;
+                        v_popupString += `<b> ${capitalize(propertie)} </b>: <a href="${value}" target="_blank">${value}</a>`;
                     }
                     else
                     {
-                        v_popupString += '<b>' + capitalize(propertie) + '</b>: ' + value + '<br />';
+                        v_popupString += '<b>' + capitalize(propertie) + '</b>: ' + value ;
                     }
-                }
-                if (propertie === 'contacto')
+                    v_popupString += '<br/>';
+                }else if (propertie === 'contacto')
                 {
                     let description = capitalize(propertie);
                     description = (check_cellphone_number(value))? (description + ' WA') : description;
@@ -233,14 +266,14 @@ function onEachFeature (p_feature, p_layer)
                        
                     }
                     product += '</ul>';
-                    v_popupString += '<b>' + capitalize(propertie) + '</b>: ' + product + '<br />';
+                    v_popupString += '<b>' + capitalize(propertie) + '</b>: ' + product;
                 }
                 else
                 {
                     v_popupString += '<b>' + capitalize(propertie) + '</b>: ' + value + '<br />';
                 }
             }
-        }
+        }        
         v_popupString += '</div>';
         p_layer.bindPopup(v_popupString);
     }
@@ -283,80 +316,67 @@ function clean_marker ()
     }
 }
 
-function generate_table (p_data)
+function generate_table_all_vendor (p_data)
 {
     let features = p_data.features;
-    let index, propertie, coordinates, lat, lng;
+    let index, propertie;
     let table = [];
     let count = 0;
+    let index_tmp;
+    let products;
+    let product;
 
     for (index in features)
     {
-        coordinates = features[index].geometry.coordinates;
-        lat = coordinates[0];
-        lng = coordinates[1];
+        propertie = features[index].properties;
 
-        // if (lat == null || lng == null)
-        // {
-            propertie = features[index].properties;
-
-            table.push(
-            {
-                numero: ++count,
-                nombre: propertie.nombre,
-                contacto: propertie.contacto,
-                productos: propertie.productos
-            })  
-        // }
-    }
-    let table_html = document.createElement("table");
-    table_html.setAttribute('class', 'table')
-
-    let row = table_html.insertRow(-1);
-    let array_header =
-    [
-        '#',
-        'Nombre',
-        'Contacto WA',
-        'Productos'
-    ];
-    let index_header;
-    let propertie_header;
-    for (index_header in array_header)
-    {
-        propertie_header = array_header[index_header];
-        var headerCell = document.createElement("th");
-        headerCell.innerHTML = propertie_header;
-        row.appendChild(headerCell);
-    }
-
-    let i;
-    for (i = 0; i < table.length; i++)
-    {
-        row = table_html.insertRow(-1);
-
-        var cell = row.insertCell(-1);
-        cell.innerHTML = table[i].numero;
-        var cell = row.insertCell(-1);
-        cell.innerHTML = table[i].nombre;
-        var cell = row.insertCell(-1);
-        cell.innerHTML = convert_link_wa(table[i].contacto);
-        var cell = row.insertCell(-1);
-
-        let index_tmp;
-        let products = table[i].productos;
-        let product = '';
+        products = propertie.productos;
+        product = '';
         
         for (index_tmp in products)
         {
             product += products[index_tmp].product_name + ', ';
         }
         product = product.substr(0, product.length - 2);
-        cell.innerHTML = product;
+
+        table.push(
+        {
+            numero: ++count,
+            vendedor: propertie.nombre,
+            contacto: convert_link_wa(propertie.contacto),
+            productos: product,
+            comentarios: propertie.comentarios
+        });
     }
-    let dvTable = document.getElementById("table_vendors_without_geo");
-    dvTable.innerHTML = "";
-    dvTable.appendChild(table_html);
+
+    $('#table_vendors_without_geo').DataTable(
+    {
+        data: table,
+        columns:
+        [
+            { data: "numero" },
+            { data: "comentarios" },
+            { data: "productos" },
+            { data: "contacto" },
+            { data: "vendedor" }
+        ],
+        language:
+        {
+            search: "Buscar:",
+            lengthMenu: "Mostrar _MENU_ vendedores",
+            info: "Mostrando la p&aacute;gina _PAGE_ de _PAGES_ de _TOTAL_ vendedores",
+            infoEmpty: "No hay registros disponibles",
+            infoFiltered: "(filtrado de _MAX_ vendedores)",
+            zeroRecords: "Nada encontrado - lo siento",
+            paginate:
+            {
+                first: "Primero",
+                previous: "Anterior",
+                next: "Siguiente",
+                last: "&Uaute;ltimo"
+            }
+        }
+    });
 }
 
 function check_cellphone_number (p_phone_number)
@@ -381,4 +401,11 @@ function convert_link_wa (p_phone_number)
         return wa_number;
     }
     return p_phone_number;
+}
+
+function get_coordinates_center_map (map)
+{
+    let options = map.options;
+    let coordinates = options.center;
+    return coordinates;
 }

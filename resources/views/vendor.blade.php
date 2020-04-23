@@ -1,27 +1,24 @@
-<html>
-<head>
-<?php 
-        $data = 
-        [
-            'data_load_map' => "marker"
-        ]
-    ?>
-    @include('header', $data)
-</head>
-<body>
-    @include('menu')
-    
+@php
+    $data_load_map  = "marker";
+@endphp
+
+@extends('template.template')
+
+@section('content_page')
     <header class="jumbotron my-4 bg-warning">
         </br>
         <h2 class="display-5">Registrarse como vendedor</h2>
         <p class="lead">
-            Completa tus datos como vendedor con los productos para aparecer en productospy.
+            Completa tus datos como vendedor con los productos y/o servicios para aparecer en productospy.
             </br>
             Cualquier consulta a <strong>productospy.org@gmail.com</strong>
         </p>
     </header>
 
     <script>
+
+        
+        {{-- Guarda el formulario de un nuevo vendedor --}}
         $(function ()
         {
             const lockModal = $("#lock-modal");
@@ -42,6 +39,8 @@
                     lockModal.css("display", "none");
                     loadingCircle.css("display", "none");
                 }, 3000);
+
+                //alert('test');
 
                 $.ajax(
                 {
@@ -74,11 +73,18 @@
                     },
                     error: function (request, status, error)
                     {
-                        alert(request.responseText);
+                        console.log('test');
+
+                        //alert(request.responseText);
                     }
                 });
             });
         });
+
+        function send_marker ()
+        {
+            marker_point_map(event, ((gps_active)? DEFAULT_ZOOM_MARKER : DEFAULT_ZOOM_MAP))
+        }
     </script>
     
     <div class="container">
@@ -106,31 +112,53 @@
             </div>
             <div class="form-group">
                 <label>
-                    <span class="label label-default" style="font-size:22px;">Productos</span>
+                    <span class="label label-default" style="font-size:22px;">Productos y/o servicios</span>
                     <span>(*)</span>
                 </label>
-                @include('products')
+
+                @include('partials.producto-tipo-form', [
+                    'data_load_map' => $data_load_map
+                ])
             </div>
-            <div>
+            <div class="form-group">
+                <label>
+                    <span class="label label-default" style="font-size:22px;">Descripci&oacute;n de los productos o servicios ofrecidos</span>
+                    <span>(opcional)</span>
+                </label>
+                </br>
+                <div class="alert alert-info" role="alert">
+                    <h4 class="alert-heading">Aviso!</h4>
+                    <p>
+                        En esta secci&oacute;n pod&eacute;s escribir detalladamente tus productos y/o servicios que ofreces.
+                        <br />
+                        <i>Ejemplo:</i>
+                        Hacemos servicio de mantenimiento de autom&oacute;viles incluyendo chaper&iacute;a y pintura.
+                    </p>
+                </div>
+                <div class="col-sm-16">
+                    <textarea class="form-control" maxlength="4000" name="user_comment" placeholder="Descripción de tus productos y/o servicios" rows="5"></textarea>
+                </div>
+            </div>
+            <div class="form-group">
                 <label>
                     <span class="label label-default" style="font-size:22px;">Ubicaci&oacute;n del vendedor</span>
-                    <span>(opcional)</span>
-                    </br>
-                    <div class="alert alert-info" role="alert">
-                        <h4 class="alert-heading">Aviso!</h4>
-                        <p>
-                            Si tenes una ubicaci&oacute;n geogr&aacute;fica haz click en el bot&oacute;n de abajo para que 
-                            aparezca en el mapa un marcador y puedas moverlo para indicar tu ubicaci&oacute;n.
-                        </p>
-                    </div>
-                    <div class="alert alert-warning" role="alert">
-                        <h4 class="alert-heading">Observaci&oacute;n!</h4>
-                        <p>
-                            Si no moves el marcador no va a guardar tu ubicaci&oacute;n!!!
-                        </p>
-                    </div>
-                    <button type="button" class="btn btn-success btn-lg btn-block" onclick="marker_point_map(event, DEFAULT_ZOOM_MAP)">Marcar ubicaci&oacute;n</button>
+                    <span>(*)</span>
                 </label>
+                </br>
+                <div class="alert alert-info" role="alert">
+                    <h4 class="alert-heading">Aviso!</h4>
+                    <p>
+                        Seleccion&aacute; tu ubicaci&oacute;n para que las personas puedan localizarte. Solo debes de hacer click en el bot&oacute;n de 
+                        abajo para que aparezca en el mapa un marcador y puedas moverlo para indicar tu ubicaci&oacute;n.
+                    </p>
+                </div>
+                <div class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading">Observaci&oacute;n!</h4>
+                    <p>
+                        Si no moves el marcador no va a poder registrarte como vendedor. Tu ubicaci&oacute;n es obligatoria!
+                    </p>
+                    </div>
+                    <button type="button" class="btn btn-success btn-lg btn-block" onclick="send_marker()">Marcar ubicaci&oacute;n</button>
                 </br>
                 <div id="map">
                     <div id='map-container' style="width: 100%; height: 300px; border: 1px solid #AAA;"></div>
@@ -150,6 +178,6 @@
        </div>
     </div>
     </br>
-    @include('footer')
-</body>
-</html>
+
+
+@endsection

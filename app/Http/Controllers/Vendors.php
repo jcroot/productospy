@@ -11,7 +11,11 @@ use App\Libraries\Utils;
 use Validator;
 
 class Vendors extends Controller
-{
+{   
+    
+    /**
+     * Retorna un listado de vendedores
+     */
     public function getVendors(Request $request)
     {
         // @todo validation
@@ -20,6 +24,7 @@ class Vendors extends Controller
 
         // Parameters
         $products_filter = json_decode($this->securityCleanCode($request->input('products')));
+        $city_filter = json_decode($this->securityCleanCode($request->input('city')));
         $filter_products = null;
         if ($products_filter != null)
         {
@@ -30,7 +35,7 @@ class Vendors extends Controller
                 $filter_products[] = $product_id;
             }
         }
-        $result_vendors = $user->getUsers($filter_products);
+        $result_vendors = $user->getUsers($filter_products, $city_filter);
         $vendors = $result_vendors['data'];
 
         foreach($vendors as $vendor)
@@ -52,17 +57,29 @@ class Vendors extends Controller
         return $GISFunctions->create_geo_json($geo_json);
     }
 
+
+    /**
+     * 
+     * Inserta un nuevo vendedor
+     * 
+     * @param Request $request
+     */
     public function postVendor(Request $request)
     {
         $validador = Validator::make($request->all(),
         [            
             'user_email' => 'email|nullable',
             'user_phone' => 'required|numeric',
+            'user_comment' => 'max:4000',
+            'user_lat' => 'required_without:user_lng|numeric',
             "products" => "required|array|min:1"
         ],
         [
-            'user_phone.required' => 'El contacto es obligatorio.',
-            'products.required' => 'Tiene que agregar por lo menos 1 producto.'
+            'user_phone.required'       => 'El contacto es obligatorio.',
+            'user_comment.max'          => 'La descripci&oacute;n no puede tener m&aacute; de 4000 car&aacute;cteres',
+            'user_lat.required_without' => 'La ubicaci&oacute;n en el mapa es obligatoria.',
+            'user_lng.required'         => 'La ubicaci&oacute;n en el mapa es obligatoria.',
+            'products.required'         => 'Tiene que agregar por lo menos 1 producto.'
         ]);
         if ($validador->fails())
         {
@@ -78,6 +95,7 @@ class Vendors extends Controller
         $user_email = $this->securityCleanCode($request->input("user_email"));
         $user_full_name = $this->securityCleanCode($request->input("user_full_name"));
         $user_phone = $this->securityCleanCode($request->input("user_phone"));
+        $user_comment = $this->securityCleanCode($request->input("user_comment"));
         $user_lng = $this->securityCleanCode($request->input("user_lng"));
         $user_lat = $this->securityCleanCode($request->input("user_lat"));
 
@@ -92,6 +110,7 @@ class Vendors extends Controller
                 'user_email' => $user_email,
                 'user_registration' => $this->getDateHour(),
                 'user_phone' => $user_phone,
+                'user_comment' => $user_comment,
                 'user_lng' => ($user_lng)? $user_lng : null,
                 'user_lat' => ($user_lat)? $user_lat : null
             ];

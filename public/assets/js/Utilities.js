@@ -1,5 +1,6 @@
 var map = null;
 var action = null;
+var gps_active = false;
 
 /**
  * Method localization by html5.
@@ -7,12 +8,14 @@ var action = null;
  * @param p_action
  * @returns void
  */
-function localization(p_action){
+function localization (p_action)
+{
 	action = p_action;
 	
     if (navigator.geolocation)
     {
-        navigator.geolocation.getCurrentPosition(getCoordinates, errors, {
+        navigator.geolocation.getCurrentPosition(getCoordinates, errors,
+        {
 			enableHighAccuracy: true,
 			timeout: 2000,
 			maximumAge: 0
@@ -34,9 +37,10 @@ function getCoordinates (p_position)
 {
     let coordinates = new Array();
     coordinates['lng']  = p_position.coords.longitude;
-	coordinates['lat'] = p_position.coords.latitude + 1.65;     // Add 1.65 to center Paraguay.
+	coordinates['lat'] = p_position.coords.latitude;
 	
-	let zoom = DEFAULT_ZOOM_MAP;
+    let zoom = DEFAULT_ZOOM_MAP;
+    gps_active = true;
 
     load_map(coordinates, zoom);
 }
@@ -49,20 +53,21 @@ function getCoordinates (p_position)
  */
 function errors (error)
 {
-	// switch(error.code){
-    // 	case error.PERMISSION_DENIED:
-    // 		alert("User denied the request for Geolocation.");
-    // 		break;
-    // 	case error.POSITION_UNAVAILABLE:
-    // 		alert("Location information is unavailable.");
-    // 		break;
-    // 	case error.TIMEOUT:
-    // 		alert("The request to get user location timed out.");
-    // 		break;
-    // 	case error.UNKNOWN_ERROR:
-    // 		alert("An unknown error occurred.");
-    // 		break;
-    // }
+    switch (error.code)
+    {
+    	case error.PERMISSION_DENIED:
+    		console.log("User denied the request for Geolocation.");
+    		break;
+    	case error.POSITION_UNAVAILABLE:
+    		console.log("Location information is unavailable.");
+    		break;
+    	case error.TIMEOUT:
+    		console.log("The request to get user location timed out.");
+    		break;
+    	case error.UNKNOWN_ERROR:
+    		console.log("An unknown error occurred.");
+    		break;
+    }
     defaultPosition();
 }	
 
@@ -96,11 +101,11 @@ function load_map (p_coordinates, p_zoom)
     switch (action)
     {
 	    case 'marker':
-			map = new Map(p_coordinates, p_zoom);
+			map = new Map(p_coordinates, p_zoom, action);
             break;
         case 'list':
         case 'default':
-            map = new Map(p_coordinates, p_zoom);
+            map = new Map(p_coordinates, p_zoom, action);
             map.get_vendors();
             break;
 	}
@@ -109,8 +114,20 @@ function load_map (p_coordinates, p_zoom)
 //
 function products_filter ()
 {
-    let products_filter = $("[name='form_filter']").serializeArray()
-    map.products_filter(products_filter);
+    let products_filter = $("[name='products[]']").serializeArray();
+    let city_filter = $("[name='city']").val();
+
+    map.products_filter(products_filter, city_filter);
+
+    // Hide product filter.
+    let checkbox = $('#changeShip'),
+      chShipBlock = $('#changeShipInputs');
+
+    checkbox.prop('checked', false);
+    chShipBlock.hide();
+
+    // Go to the top product-filter section.
+    $(window).scrollTop($('#product-filter').offset().top);
 }
 
 function marker_point_map (p_e, p_zoom)

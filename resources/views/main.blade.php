@@ -1,35 +1,35 @@
-<html>
-<head>
-    <?php 
-        $data = 
-        [
-            'data_load_map' => "list"
-        ]
-    ?>
-    @include('header', $data)
-</head>
-<body>
+@extends('template.template')
+
+
+@section('content_page')
+
+    @include('template.menu-main')
+    @include('partials.producto-filtro')
+
     
-    @include('menu')
-
-    @include('main_menu')
-
-    @include('filter')
-
     <div id="map">
         <div class="title-section">Vendedores con ubicaci&oacute;n</div>
-        <div id='map-container' class="map-container-vendors" style="height: 450px; border: 1px solid #AAA;"></div>
+        <div id='map-container' class="map-container-vendors" style="height: 430px; border: 1px solid #AAA;"></div>
     </div>
+    
     </br>
     <div class="container">
-        <div class="title-section">Todos los vendedores</div>
+        <div class="title-section">Lista de todos los vendedores</div>
         <div class="table-responsive">
-            <div id="table_vendors_without_geo">
-            </div>
+            <table id="table_vendors_without_geo" class="display" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Comentario</th>
+                        <th>Productos</th>
+                        <th>Contacto</th>
+                        <th>Vendedor</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
     </div>
     </br>
-    @include('footer')
 
     <script>
         let checkbox = $('#changeShip'),
@@ -54,20 +54,9 @@
         $("#selectAll").click(function()
         {
             // Check selected only products.
-            let current_check;
-            $('input[name="products[]"]').each(function ()
-            {
-                current_check = $(this);
-                if (current_check.is(':checked'))
-                {
-                    current_check.prop("checked", false);
-                }
-                else
-                {
-                    current_check.prop("checked", true); 
-                }
-            });
+            $('input[name="products[]"]').prop('checked', $(this).is(":checked"));
         });
     </script>
-</body>
-</html>
+
+
+@endsection
